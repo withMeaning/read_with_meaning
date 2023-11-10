@@ -41,7 +41,7 @@ dependencies:
   flutter_riverpod: ^2.3.6
   shimmer: ^3.0.0
   sqlite3_flutter_libs: ^0.5.15
-  path_provider: ^2.0.15
+  path_provider: ^2.0.15 # TODO look at it
   path: ^1.8.3
   riverpod_annotation: ^2.1.1
   uuid: ^3.0.7
@@ -54,6 +54,10 @@ dependencies:
   coverage: ^1.6.3
   realm: ^1.4.0
   collection: ^1.17.1
+  sentry_flutter: ^7.11.0 
+  flutter_dotenv: ^5.1.0
+
+  # TODO PIN the version
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +91,7 @@ flutter:
         - asset: assets/fonts/icomoon.ttf
   # To add assets to your application, add an assets section, like this:
   assets:
+     - .env
      - assets/images/meaning-icon-transparent.png
      - assets/images/withmeaning.webp
      - assets/images/good_rating_background.png
@@ -94,6 +99,7 @@ flutter:
      - assets/images/black_to_background.png
      - assets/images/navigation_background.png
      - assets/images/navigation_background_transparent.png
+     - assets/images/big_menu_background.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

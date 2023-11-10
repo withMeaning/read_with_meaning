@@ -1,7 +1,10 @@
 enum NavOptions {
   now("Now"),
-  stream("Today"),
-  lakes("Plan"),
+  stream("When"),
+  lakes("What"),
+  spile("Which"),
+  sources("Where"),
+  overview("Menu"),
 
   add("New"),
   refresh("Refresh"),

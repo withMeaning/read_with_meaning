@@ -5,7 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:read_with_meaning/public/common_widgets/full_screen.dart';
 import 'package:read_with_meaning/public/common_widgets/navigation/swipeable_icon.dart';
 import 'package:read_with_meaning/public/constants/image_strings.dart';
-import 'package:read_with_meaning/public/features/experience/single/rating/rating_provider.dart';
+import 'package:read_with_meaning/public/features/experience/single%20(now)/rating/rating_provider.dart';
 
 class MenuItem {
   const MenuItem(
@@ -159,36 +159,42 @@ class _MainSwipeNavigationState extends State<MainSwipeNavigation> {
   }
 
   onPanEnd(DragEndDetails details) {
-    if (!noScroller) {
-      scrollVelocityY = details.velocity.pixelsPerSecond.dy / 2;
-      double finalOffset = scrollController.offset - scrollVelocityY;
-      // Clamping scroll offset within the scrollable bounds
-      if (finalOffset < 0) {
-        finalOffset = 0;
-      } else if (finalOffset > scrollController.position.maxScrollExtent) {
-        finalOffset = scrollController.position.maxScrollExtent;
+    for (var i = 0; i < 1; i++) {
+      if (menuXposition < 0.5 && topPosition > 150) {
+        Logger().i("Left Navigation");
+        widget.leftMenuItem!.callback();
+        break;
+      } else if (menuXposition > 0.5 &&
+          menuXposition < 1.5 &&
+          topPosition > 150) {
+        Logger().i("Center Navigation");
+        widget.centerMenuItem.callback();
+        break;
+      } else if (menuXposition > 1.5 && topPosition > 150) {
+        Logger().i("Right Navigation");
+        widget.rightMenuItem!.callback();
+        break;
+      } else {
+        Logger().i("Do Nothing");
       }
-      // TODO: lock the direction (up/down)
-      scrollController.animateTo(finalOffset,
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.decelerate);
+      if (!noScroller) {
+        scrollVelocityY = details.velocity.pixelsPerSecond.dy / 2;
+        double finalOffset = scrollController.offset - scrollVelocityY;
+        // Clamping scroll offset within the scrollable bounds
+        if (finalOffset < 0) {
+          finalOffset = 0;
+        } else if (finalOffset > scrollController.position.maxScrollExtent) {
+          finalOffset = scrollController.position.maxScrollExtent;
+        }
+        // TODO: lock the direction (up/down)
+        scrollController.animateTo(finalOffset,
+            duration: const Duration(milliseconds: 700),
+            curve: Curves.decelerate);
+      }
+      Logger().i("Pan End");
+
+      reset();
     }
-    Logger().i("Pan End");
-    if (menuXposition < 0.5 && topPosition > 150) {
-      Logger().i("Left Navigation");
-      widget.leftMenuItem!.callback();
-    } else if (menuXposition > 0.5 &&
-        menuXposition < 1.5 &&
-        topPosition > 150) {
-      Logger().i("Center Navigation");
-      widget.centerMenuItem.callback();
-    } else if (menuXposition > 1.5 && topPosition > 150) {
-      Logger().i("Right Navigation");
-      widget.rightMenuItem!.callback();
-    } else {
-      Logger().i("Do Nothing");
-    }
-    reset();
   }
 
   void onMouseScroll(PointerScrollEvent pointerSignal) {
@@ -373,7 +379,7 @@ class _MainSwipeNavigationAllDirectionsState
     });
   }
 
-  reset() {
+  void reset() {
     setState(() {
       //topPosition = 0;
       //mainTextScrollable = false;
@@ -391,12 +397,14 @@ class _MainSwipeNavigationAllDirectionsState
     });
   }
 
+  // TODO void before all functions
   onPanStart(DragStartDetails details) {
     Logger().i("Scroll Start ${details.localPosition}");
     final screenWidth = MediaQuery.of(context).size.width;
 
     // initial position of the menu
     setState(() {
+      // TODO ???
       setState(() {
         if ((details.localPosition.dx / screenWidth).clamp(0, 1) < (1 / 3)) {
           menuXposition = 0;
@@ -466,7 +474,9 @@ class _MainSwipeNavigationAllDirectionsState
       // OR when we are at the top and swiping up
       Logger().i(
           "newSwipe: Normal Scroll: Off: ${scrollController.offset} Top: $topPosition Delta: ${details.delta.dy}");
-      if ((scrollController.offset != 0 && topPosition == 0) ||
+      if ((scrollController.offset != 0 &&
+              topPosition == 0 &&
+              details.globalPosition.dy > 150) ||
           (scrollController.offset == 0 && details.delta.dy < 0)) {
         setState(() {
           isNewVertical = false;
@@ -487,7 +497,8 @@ class _MainSwipeNavigationAllDirectionsState
       else if ((scrollController.offset == 0 &&
               details.delta.dy > 0 &&
               isNewVertical) ||
-          (topPosition > 0)) {
+          (topPosition > 0) ||
+          details.globalPosition.dy <= 150) {
         setState(() {
           if (topPosition >= 0) {
             topPosition += details.delta.dy;
@@ -500,59 +511,70 @@ class _MainSwipeNavigationAllDirectionsState
   }
 
   onPanEnd(DragEndDetails details) {
-    if (isVertical) {
-      if (!noScroller) {
-        scrollVelocityY = details.velocity.pixelsPerSecond.dy / 2;
-        double finalOffset = scrollController.offset - scrollVelocityY;
-        // Clamping scroll offset within the scrollable bounds
-        if (finalOffset < 0) {
-          finalOffset = 0;
-        } else if (finalOffset > scrollController.position.maxScrollExtent) {
-          finalOffset = scrollController.position.maxScrollExtent;
+    for (var i = 0; i < 1; i++) {
+      if (isVertical) {
+        Logger().i("Pan End");
+        if (menuXposition < 0.5 && topPosition > 150) {
+          Logger().i("Left Navigation");
+          widget.leftMenuItem!.callback();
+          break;
+        } else if (menuXposition > 0.5 &&
+            menuXposition < 1.5 &&
+            topPosition > 150) {
+          Logger().i("Center Navigation");
+          widget.centerMenuItem.callback();
+          break;
+        } else if (menuXposition > 1.5 && topPosition > 150) {
+          Logger().i("Right Navigation");
+          widget.rightMenuItem!.callback();
+          break;
+        } else {
+          Logger().i("Do Nothing");
         }
-        // TODO: lock the direction (up/down)
-        scrollController.animateTo(finalOffset,
-            duration: const Duration(milliseconds: 700),
-            curve: Curves.decelerate);
+        if (!noScroller) {
+          scrollVelocityY = details.velocity.pixelsPerSecond.dy / 2;
+          double finalOffset = scrollController.offset - scrollVelocityY;
+          // Clamping scroll offset within the scrollable bounds
+          if (finalOffset < 0) {
+            finalOffset = 0;
+          } else if (finalOffset > scrollController.position.maxScrollExtent) {
+            finalOffset = scrollController.position.maxScrollExtent;
+          }
+          // TODO: lock the direction (up/down)
+          scrollController.animateTo(finalOffset,
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.decelerate);
+        }
       }
-      Logger().i("Pan End");
-      if (menuXposition < 0.5 && topPosition > 150) {
-        Logger().i("Left Navigation");
-        widget.leftMenuItem!.callback();
-      } else if (menuXposition > 0.5 &&
-          menuXposition < 1.5 &&
-          topPosition > 150) {
-        Logger().i("Center Navigation");
-        widget.centerMenuItem.callback();
-      } else if (menuXposition > 1.5 && topPosition > 150) {
-        Logger().i("Right Navigation");
-        widget.rightMenuItem!.callback();
-      } else {
-        Logger().i("Do Nothing");
+      if (isHorizontal) {
+        if (dismissX > dismissThreshold) {
+          int clampedDragExtend =
+              ((dismissX - dismissThreshold) * scale).clamp(0, 100) ~/ 2;
+          ref.watch(ratingProvider.notifier).state = 50 + clampedDragExtend;
+          setState(() {
+            scrollController.jumpTo(0.0);
+          });
+          widget.leftCenterSwipeItem?.callback();
+        }
+        if (dismissX < -dismissThreshold) {
+          int clampedDragExtend =
+              ((-dismissX - dismissThreshold) * scale).clamp(0, 100) ~/ 2;
+          ref.watch(ratingProvider.notifier).state = 50 - clampedDragExtend;
+          setState(() {
+            scrollController.jumpTo(0.0);
+          });
+          widget.rightCenterSwipeItem?.callback();
+        }
       }
+      reset();
     }
-    if (isHorizontal) {
-      if (dismissX > dismissThreshold) {
-        int clampedDragExtend =
-            ((dismissX - dismissThreshold) * scale).clamp(0, 100) ~/ 2;
-        ref.watch(ratingProvider.notifier).state = 50 + clampedDragExtend;
-        widget.leftCenterSwipeItem?.callback();
-      }
-      if (dismissX < -dismissThreshold) {
-        int clampedDragExtend =
-            ((-dismissX - dismissThreshold) * scale).clamp(0, 100) ~/ 2;
-        ref.watch(ratingProvider.notifier).state = 50 - clampedDragExtend;
-        widget.leftCenterSwipeItem?.callback();
-      }
-    }
-    reset();
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        isVertical
+        isVertical // TODO create Widget, rename isVertical to Swipe
             ? Container(
                 color: Theme.of(context).colorScheme.surfaceVariant,
                 child: Transform.translate(
@@ -640,6 +662,7 @@ class _MainSwipeNavigationAllDirectionsState
                             Alignment((dismissX * 4.5 - 2).clamp(-1, 1), 0)),
               ),
         GestureDetector(
+            // TODO could be parent of the stack
             behavior: HitTestBehavior.opaque,
             onPanStart: onPanStart,
             onPanUpdate: onPanUpdate,

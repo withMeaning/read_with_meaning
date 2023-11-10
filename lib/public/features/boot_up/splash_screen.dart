@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 // ? what is the differnece between import over package vs relative?
-import 'login/data/secure_login/utils.dart';
 import '../../constants/image_strings.dart';
 import '../../routing/routes.dart';
 
@@ -25,17 +24,13 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
+    // TODO remove this
+
     _controller = AnimationController(
         duration: const Duration(milliseconds: 400), vsync: this)
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          checkUserAuthorizationStatus(mounted).then((isLoggedIn) {
-            if (isLoggedIn) {
-              context.replaceNamed(AppRoute.now.name);
-            } else {
-              context.replaceNamed(AppRoute.login.name);
-            }
-          });
+          context.replaceNamed(AppRoute.now.name);
         }
       });
     _controller.forward();

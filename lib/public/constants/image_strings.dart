@@ -12,3 +12,4 @@ const String navigationBackgroundImageOnBlack =
     "assets/images/navigation_background.png";
 const String navigationBackgroundImageOnTransparent =
     "assets/images/navigation_background_transparent.png";
+const String bigMenuBackgroundImage = "assets/images/big_menu_background.png";

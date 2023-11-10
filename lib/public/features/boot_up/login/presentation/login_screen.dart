@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:read_with_meaning/public/features/boot_up/login/data/secure_login/utils.dart';
-import 'package:read_with_meaning/public/features/experience/plan/stream_file/data/realm_repository.dart';
+import 'package:read_with_meaning/public/common_widgets/errors/snack_bar.dart';
+import 'package:read_with_meaning/public/constants/app_sizes.dart';
+import 'package:read_with_meaning/public/features/experience/data/realm_repository.dart';
+import 'package:realm/realm.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _privateKeyController = TextEditingController();
+  final _emailController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -29,14 +33,20 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  textInputAction: TextInputAction.done,
+                ),
+                TextFormField(
                   controller: _privateKeyController,
-                  decoration: const InputDecoration(labelText: 'Private Key'),
+                  decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
                   onFieldSubmitted: (_) {
                     _submit(ref);
                   },
                   textInputAction: TextInputAction.done,
                 ),
+                gapH12,
                 ElevatedButton(
                   onPressed: () {
                     _submit(ref);
@@ -51,16 +61,30 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  _submit(WidgetRef ref) {
+  _submit(WidgetRef ref) async {
     if (_formKey.currentState!.validate()) {
-      logIn(context, _privateKeyController.text.trim(), mounted)
-          .then((redirectYes) {
-        ref.read(loginRealmRepositoryProvider);
-        ref.refresh(currentUserProvider);
-        //ref.read(realmSetupProvider);
-        //Logger().i('realm: ${ref.read(realmProvider)}');
-        //redirectYes ? context.replaceNamed(AppRoute.now.name) : null;
-      });
+      final app = ref.read(appProvider);
+      try {
+        User? user = app.currentUser ??
+            await app.logIn(Credentials.emailPassword(
+                _emailController.text.trim(),
+                _privateKeyController.text.trim()));
+        //ref.read(currentUserProvider.notifier).state = user;
+        //ref.refresh(currentUserProvider);
+        ref.read(userProvider.notifier).init(user, ref);
+
+/*         await secureStorage.write(key: 'authStatus', value: "loggedIn");
+        await secureStorage.write(
+            key: 'authToken', value: _privateKeyController.text.trim());
+        await secureStorage.write(
+            key: 'email', value: _emailController.text.trim()); */
+      } on Exception catch (e, stackTrace) {
+        snackBar(context, "Invalid credentials.");
+        Sentry.captureException(
+          e,
+          stackTrace: stackTrace,
+        );
+      }
     }
   }
 

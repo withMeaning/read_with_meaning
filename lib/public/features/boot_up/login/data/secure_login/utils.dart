@@ -1,16 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
-import 'package:read_with_meaning/public/features/boot_up/login/data/secure_login/storage.dart';
-import 'package:read_with_meaning/public/common_widgets/errors/snack_bar.dart';
-import 'package:read_with_meaning/public/features/experience/plan/stream_file/data/realm_repository.dart';
+import 'package:read_with_meaning/public/features/experience/data/realm_repository.dart';
 
-import '../auth.dart';
-
+/* 
 Future<bool> logIn(
   BuildContext context,
   String privateKey,
@@ -30,6 +23,7 @@ Future<bool> logIn(
     } else if (authStatus.statusCode == 401) {
       if (!mounted) return false;
       snackBar(context, 'Invalid authentication.');
+      await Sentry.captureMessage('Invalid authentication.');
       await secureStorage.write(key: 'authStatus', value: "loggedOut");
     } else {
       if (!mounted) return false;
@@ -37,7 +31,11 @@ Future<bool> logIn(
       snackBar(context, 'Something went wrong.');
       await secureStorage.write(key: 'authStatus', value: "loggedOut");
     }
-  } catch (e) {
+  } catch (e, stackTrace) {
+    await Sentry.captureException(
+      e,
+      stackTrace: stackTrace,
+    );
     Logger().e(e);
     if (e is SocketException) {
       snackBar(context, '');
@@ -49,16 +47,17 @@ Future<bool> logIn(
     return false;
   }
   return false;
-}
+} */
 
 Future<void> logOut(WidgetRef ref) async {
   //ref.read(appProvider).currentUser?.logOut();
-  await secureStorage.write(key: 'authStatus', value: "loggedOut");
-  ref.read(currentUserProvider)?.logOut();
-  return ref.refresh(currentUserProvider);
+  // await secureStorage.write(key: 'authStatus', value: "loggedOut");
+  //await secureStorage.write(key: 'authToken', value: "");
+  ref.read(userProvider)?.logOut();
+  return ref.refresh(userProvider);
 }
 
-Future<bool> checkUserAuthorizationStatus(mounted) async {
+/* Future<bool> checkUserAuthorizationStatus(mounted) async {
   String? authStatus = await secureStorage.read(key: 'authStatus');
   if (!mounted) return false;
   if (authStatus != null && authStatus == 'loggedIn') {
@@ -66,4 +65,4 @@ Future<bool> checkUserAuthorizationStatus(mounted) async {
   } else {
     return false;
   }
-}
+} */

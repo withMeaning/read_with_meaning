@@ -1,16 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:stack_trace/stack_trace.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-import 'package:read_with_meaning/public/constants/colors.dart';
+import 'package:read_with_meaning/public/constants/theme.dart';
 import 'package:read_with_meaning/public/constants/text_strings.dart';
 import 'package:read_with_meaning/public/routing/routes.dart';
 
 import 'package:flutter/services.dart';
 
+// TODO replace Logger() with logger everywhere
 final Logger logger = Logger(
   printer: PrettyPrinter(
     methodCount: 0,
@@ -23,64 +26,34 @@ final Logger logger = Logger(
   level: Level.debug, //main function to tell what to show
 );
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // because of a Riverpod Error
   FlutterError.demangleStackTrace = (StackTrace stack) {
     if (stack is Trace) return stack.vmTrace;
     if (stack is Chain) return stack.toTrace().vmTrace;
     return stack;
   };
 
-  runApp(
-    // ignore: prefer_const_constructors
-    ProviderScope(
-      child: const Meaning(),
+  await dotenv.load();
+
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = dotenv.env['SENTRY_DNS'];
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+      // We recommend adjusting this value in production.
+      options.tracesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(
+      const ProviderScope(
+        child: Meaning(),
+      ),
     ),
   );
 
-  // * For more info on error handling, see:
-  // * https://docs.flutter.dev/testing/errors
-  // runZonedGuarded(
-  //   () {
-  //     // * Entry point of the app
-  //     runApp(
-  //       const ProviderScope(
-  //         child: Meaning(),
-  //       ),
-  //     );
-  //   },
-  //   (Object error, StackTrace stack) {
-  //     // * Log any errors to console
-  //     debugPrint(error.toString());
-
-  //     // * This code will present some error UI if any uncaught exception happens
-  //     FlutterError.onError = (FlutterErrorDetails details) {
-  //       FlutterError.presentError(details);
-  //     };
-  //     ErrorWidget.builder = (FlutterErrorDetails details) {
-  //       return MaterialApp(
-  //         home: Scaffold(
-  //           appBar: AppBar(
-  //             backgroundColor: Colors.red,
-  //             title: const Text('An error occurred'),
-  //             actions: [
-  //               Consumer(builder: (context, ref, _) {
-  //                 return IconButton(
-  //                     icon: const Icon(Icons.logout),
-  //                     onPressed: () {
-  //                       logOut(ref);
-  //                       //context.goNamed(AppRoute.login.name);
-  //                     });
-  //               })
-  //             ],
-  //           ),
-  //           body: Center(child: Text(details.toString())),
-  //         ),
-  //       );
-  //     };
-  //   },
-  // );
+  // TODO use env variables
+  // or define SENTRY_DSN via Dart environment variable (--dart-define)
 }
 
 class Meaning extends ConsumerWidget {
@@ -90,6 +63,8 @@ class Meaning extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
+
+    // hides standart Android navigation bar and top bar
     if (Platform.isAndroid) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
